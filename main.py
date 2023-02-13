@@ -3,12 +3,8 @@
 import requests
 import json
 import os
-import sys
-import re
-import operator
-import collections
-import string
-import argparse
+
+from detect_union import file_has_union, has_union
 
 
 # get the repo name from the user
@@ -248,7 +244,8 @@ def parse_file_and_detect_if_uses_union(file, json_file_to_write_to="", path_to_
         data = f.read().decode('ISO-8859-1')
 
         # check if the file uses union types
-        if " | " in data:
+        # if " | " in data:
+        if file_has_union(data):
             # print the file name
             print(file)
 
@@ -291,10 +288,11 @@ def get_percentage_typescript(languages_used_data):
     total_lines_of_code = 0
 
     for key in languages_used_data.keys():
-        if key != "TypeScript":
-            total_lines_of_code += languages_used_data[key]
+        total_lines_of_code += languages_used_data[key]
 
-    percentage_typescript = (languages_used_data["TypeScript"] / total_lines_of_code) * 100
+    percentage_typescript = round((languages_used_data["TypeScript"] / total_lines_of_code) * 100, 2)
+
+    return percentage_typescript
 
 def list_repos(root_folder, global_analysis_json_file, number_of_repos=10, page_limit=10, page=1):
     print("Getting list of repos that use typescript from github ...")
@@ -385,6 +383,7 @@ def list_repos(root_folder, global_analysis_json_file, number_of_repos=10, page_
                         "repo_user": repo_user,
                         "lines_of_code": lines_of_code,
                         "percentage_of_lines_of_code_that_use_union_types": percentage_of_lines_of_code_that_use_union_types,
+                        "percentage_typescript": percentage_typescript,
                         "languages_used": languages_used_data,
                         "url": repo["html_url"],
                         "analysis_path_file": analysis_path_file
@@ -406,6 +405,7 @@ def list_repos(root_folder, global_analysis_json_file, number_of_repos=10, page_
                     "repo_user": repo_user,
                     "lines_of_code": lines_of_code,
                     "percentage_of_lines_of_code_that_use_union_types": percentage_of_lines_of_code_that_use_union_types,
+                    "percentage_typescript": percentage_typescript,
                     "languages_used": languages_used_data,
                     "url": repo["html_url"],
                     "analysis_path_file": analysis_path_file
