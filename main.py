@@ -4,7 +4,7 @@ import requests
 import json
 import os
 
-from detect_union import file_has_union, has_union
+from detect_union import file_has_union
 
 
 # get the repo name from the user
@@ -306,8 +306,13 @@ def list_repos(root_folder, global_analysis_json_file, number_of_repos=10, page_
         with open(global_analysis_json_file, "w") as f:
             f.write("")
 
-    # get list of repos public repos on github that use typescript
-    response = requests.get("https://api.github.com/search/repositories?q=language:typescript&sort=stars&order=desc&per_page=" + str(number_of_repos)+"&page=" + str(page))
+    token = "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"
+
+    # get list of repos public repos on github that use typescript. Make a request to the github api with the github token in the header
+    headers = {'Authorization': 'token ' + token}
+
+    response = requests.get("https://api.github.com/search/repositories?q=language:typescript&sort=stars&order=desc&per_page=" + str(number_of_repos)+"&page=" + str(page), headers=headers)
+
 
     # check if the request was successful
     if response.status_code == 200:
@@ -339,10 +344,11 @@ def list_repos(root_folder, global_analysis_json_file, number_of_repos=10, page_
             print("Repo languages url: " + languages_url)
 
             # get the languages used in the repo
-            languages_used_response = requests.get(languages_url)
+            languages_used_response = requests.get(languages_url, headers=headers)
 
             # check if the request was successful 
             if languages_used_response.status_code == 200:
+                print("Repo languages used: " + languages_used_response.text)
                 # get the json data
                 languages_used_data = json.loads(languages_used_response.text)
 
@@ -417,6 +423,9 @@ def list_repos(root_folder, global_analysis_json_file, number_of_repos=10, page_
 
                 if counter >= number_of_repos:
                     break
+            else:
+                print("Error: " + str(languages_used_response.status_code))
+                print(languages_used_response.text)
     else:
         print("Error: " + str(response.status_code))
         print(response.text)
@@ -481,4 +490,4 @@ if __name__ == "__main__":
     #     print(len(json1["repos"]))
 
 
-    list_repos(root_folder, global_analysis_json_file, number_of_repos=100, page_limit=10, page=1)
+    list_repos(root_folder, global_analysis_json_file, number_of_repos=10, page_limit=10, page=1)
